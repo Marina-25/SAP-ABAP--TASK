@@ -1,0 +1,78 @@
+REPORT ZMAR_ALV.
+
+DATA : it_makt TYPE STANDARD TABLE OF makt.
+DATA v_matnr TYPE matnr.
+
+
+
+*DATA o_alv TYPE REF TO CL_SALV_TABLE.
+*DATA o_alv1 TYPE REF TO CL_SALV_TABLE.
+SELECT-OPTIONS s_matnr FOR v_matnr.
+START-OF-SELECTION.
+PERFORM get_data.
+
+
+
+END-OF-SELECTION.
+PERFORM display.
+*&---------------------------------------------------------------------*
+*& Form get_data
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM get_data .
+SELECT * FROM makt INTO TABLE it_makt WHERE matnr In s_matnr.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form display
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM display .
+CL_SALV_TABLE=>factory(
+  IMPORTING
+    r_salv_table   =   DATA(o_alv)                      " Basis Class Simple ALV Tables
+  CHANGING
+    t_table        = it_makt
+).
+*CATCH cx_salv_msg. " ALV: General Error Class with Message
+o_alv->set_screen_status(
+  report        = 'ZDEMO_ALV'
+  pfstatus      = 'SALV_TABLE_STANDARD'
+*  set_functions = cl_salv_model_base=>c_functions_none
+).
+
+*   Calling method to set the PF-Status
+    o_alv->set_screen_status(
+      pfstatus      =  'SALV_STANDARD'
+      report        =  'SALV_DEMO_TABLE_SELECTIONS'
+      set_functions = o_alv->c_functions_all ).
+
+DATA: lo_layout  TYPE REF TO cl_salv_layout,
+          lf_variant TYPE slis_vari,
+          ls_key    TYPE salv_s_layout_key.
+*
+*   get layout object
+    lo_layout = o_alv->get_layout( ).
+*
+*   set Layout save restriction
+*   1. Set Layout Key .. Unique key identifies the Differenet ALVs
+    ls_key-report = sy-repid.
+    lo_layout->set_key( ls_key ).
+*   2. Remove Save layout the restriction.
+    lo_layout->set_save_restriction( if_salv_c_layout=>restrict_none ).
+*
+*   set initial Layout
+    lf_variant = 'DEFAULT'.
+    lo_layout->set_initial_layout( lf_variant ).
+    
+    
+
+o_alv->display( ).
+ENDFORM.
