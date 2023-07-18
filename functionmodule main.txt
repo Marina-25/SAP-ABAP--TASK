@@ -1,0 +1,118 @@
+REPORT zmar_ftnmodmain.
+
+**to give type to change description.
+*TYPES : BEGIN OF ty_kna1,
+*        kunnr TYPE kna1-kunnr,
+*        name1 TYPE kna1-name1,
+*        END OF ty_kna1.
+*
+*TYPES : BEGIN OF ty_t006a,
+*        msehi TYPE t006a-msehi,
+*        mseht TYPE t006a-mseht,
+*        END OF  ty_t006a.
+*
+*DATA : V_FKDAT TYPE fkdat,
+*       V_VBELN TYPE vbeln,
+*       v_kunrg TYPE kunrg.
+*
+*
+**  *step1
+*DATA : it_vbrk TYPE TABLE OF zvbrk_ma,
+*      wa_vbrk LIKE LINE OF it_vbrk,
+*      it_vbrp TYPE TABLE OF zvbrp_ma,
+*      wa_vbrp LIKE LINE OF it_vbrp,
+*     it_t006a TYPE TABLE OF ty_t006a,
+*     wa_t006a LIKE LINE OF it_t006a,
+*     it_kna1 TYPE TABLE OF ty_kna1,
+*     wa_kna1 LIKE LINE OF it_kna1.
+
+DATA : it_header TYPE zmar_headertable,
+       wa_header LIKE LINE OF it_header.
+
+DATA : it_item TYPE zmar_headeritem,
+       wa_item LIKE LINE OF it_item.
+*DATA s_vbeln TYPE zvbrk_ma.
+
+START-OF-SELECTION.
+
+SELECT-OPTIONS s_vbeln FOR wa_HEADER-vbeln.
+PERFORM get_Data.
+
+END-OF-SELECTION.
+
+PERFORM show_Output.
+
+FORM get_data.
+  CALL FUNCTION 'ZMAR_FTNMOD'
+    EXPORTING
+      im_vbeln  = s_vbeln[]
+    IMPORTING
+      ex_header = it_header
+      ex_item   = it_item.
+
+  ENDFORM.
+* EXCEPTIONS
+*   INVALIDMATERIAL       = 1
+*   OTHERS                = 2
+*
+*IF sy-subrc <> 0.
+** Implement suitable error handling here
+*ENDIF.
+
+
+
+*step4
+*         sort it_vbrp by vbeln posnr.
+*         LOOP AT it_header INTO wa_header.
+*           READ TABLE it_header INTO wa_header WITH KEY vbeln = wa_item-vbeln.
+*           READ TABLE it_item INTO wa_item WITH KEY vbeln = wa_item-vbeln.
+*           READ TABLE it_t006a into  wa_t006a with key msehi = wa_vbrp-vrkme.
+*           READ TABLE it_kna1 into wa_kna1 with key kunnr = wa_header-kunrg.
+*           AT NEW vbeln.
+
+FORM show_Output .
+  CALL FUNCTION 'ZMAR_WRITEMOD'
+    EXPORTING
+      im_header       = IT_HEADER
+      im_item         = IT_ITEM.
+            .
+
+  ENDFORM.
+*  LOOP AT it_header INTO wa_header.
+*
+*    WRITE : / 'DOC NO :',wa_header-vbeln,
+**                    / 'Payer number:',wa_header-kunrg,
+*           / 'payer name:',wa_HEADER-NAME1,
+*            / 'date :',wa_header-fkdat,
+*            / 'net value :',wa_header-netwr.
+**                      /'item ',
+**                     45 'Material ',
+**                    60 'Quantity',
+**                    75 'Measure',
+**                    90 'abbr',
+**                     110'Net value'.
+*    HIDE wa_header-vbeln.
+**clear wa_header-vbeln.
+*  ENDLOOP.
+*
+*ENDFORM.
+*AT LINE-SELECTION.
+*  LOOP AT it_item INTO wa_item WHERE vbeln EQ wa_header-vbeln.
+*
+*
+*    WRITE : / wa_item-posnr,
+*              wa_item-matnr,
+*              wa_item-fkimg,
+*              wa_item-vrkme,
+**             wa_ITEM-MSEht,
+*              wa_item-netwr.
+*
+*    CLEAR wa_header-vbeln.
+*
+**              ENDAT.
+***
+*
+*  ENDLOOP.
+*
+*  CLEAR : wa_vbrp,wa_vbrk.
+*   ENDLOOP.
