@@ -1,0 +1,51 @@
+REPORT ZMA_DEMO_PLANTRANGE.
+
+TYPES : BEGIN OF ty_mard,
+        matnr TYPE mard-matnr,
+        werks TYPE mard-werks,
+        lgort TYPE mard-lgort,
+  END OF ty_mard.
+
+*
+TYPES : BEGIN OF ty_range,
+         sign TYPE char1,
+        opti TYPE char2,
+        low TYPE matnr,
+        high TYPE matnr,
+  END OF ty_range.
+
+ DATA : it_mard TYPE STANDARD TABLE OF ty_mard,
+        wa_mard LIKE LINE OF it_mard.
+
+ DATA : it_range TYPE STANDARD TABLE OF zma_redgreen,
+        wa_range LIKE LINE OF it_range.
+
+ DATA : it_srange TYPE STANDARD TABLE OF ty_range,
+        wa_srange LIKE LINE OF it_srange.
+
+
+ DATA : it_drange TYPE STANDARD TABLE OF ty_range,
+        wa_drange LIKE LINE OF it_drange.
+
+
+
+SELECT-OPTIONS s_werks FOR wa_mard-werks.
+        SELECT matnr werks lgort FROM mard INTO TABLE it_mard where werks in s_werks.
+         SELECT * FROM zma_redgreen into table it_range.
+           SELECT SIGN OPTI LOW HIGH FROM ZMA_REDGREEN INTO TABLE it_srange.
+             SELECT SIGN OPTI LOW HIGH FROM ZMA_REDGREEN INTO TABLE it_drange.
+
+sort it_mard by matnr.
+LOOP AT it_mard INTO wa_mard.
+  IF wa_mard-matnr IN it_drange.
+    FORMAT  COLOR COL_NEGATIVE.
+  write : / 'material num',
+           20'plant num' LEFT-JUSTIFIED,
+          40 'location' LEFT-JUSTIFIED.
+SKIP.
+  ELSE.
+  write : / wa_mard-matnr,
+           20 wa_mard-werks LEFT-JUSTIFIED,
+          40   wa_mard-lgort LEFT-JUSTIFIED.
+  ENDIF.
+  ENDLOOP.
