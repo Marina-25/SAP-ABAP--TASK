@@ -1,0 +1,84 @@
+REPORT ZMAR_LINESELECTION1 NO STANDARD PAGE HEADING LINE-COUNT 10(1).
+
+
+DATA : it_vbrk TYPE TABLE OF zvjvbpk,
+       wa_vbrk LIKE LINE OF it_vbrk.
+DATA : it_vbrp TYPE TABLE OF zvjvbrp,
+       wa_vbrp LIKE LINE OF it_vbrp.
+
+DATA v_vbeln TYPE char10.
+DATA v_field TYPE char40.
+
+" Provide selection screen for user Input
+"SELECT-OPTIONS s_vbeln FOR wa_vbrk-vbeln.
+
+
+START-OF-SELECTION.
+  " Data Selection
+  SELECT * FROM zvjvbpk INTO TABLE it_vbrk.
+
+
+  WRITE : / 'Doc No:',
+            20 'Payer:',
+            40 'Date:',
+            60 'Net Value:'.
+  LOOP AT it_vbrk INTO wa_vbrk.
+
+    WRITE : / wa_vbrk-vbeln,
+                20 wa_vbrk-kunrg,
+                40 wa_vbrk-fkdat,
+                60 wa_vbrk-netwr.
+    HIDE wa_vbrk-vbeln.
+    SKIP.
+    CLEAR wa_vbrk.
+  ENDLOOP.
+  CLEAR wa_vbrk.
+
+AT LINE-SELECTION.
+  READ LINE sy-lilli.
+
+*GET CURSOR FIELD v_field VALUE v_vbeln.
+  IF sy-subrc = 0.
+    "SELECT * FROM zvjvbpk INTO TABLE it_vbrk.
+    SELECT * FROM zvjvbrp INTO TABLE it_vbrp WHERE vblen EQ wa_vbrk-vbeln."v_vbeln.
+    WRITE : / 'Item',
+               20 'Material',
+               40 'Quantity',
+               60 'UoM',
+               90 'Net Value'.
+    LOOP AT it_vbrp INTO wa_vbrp.
+      "READ TABLE it_kna1 INTO wa_kna1 WITH KEY kunnr = wa_ekko-kunrg .
+      WRITE : / wa_vbrp-posnr,
+                 20 wa_vbrp-matnr,
+                 40 wa_vbrp-fkimg,
+                 60 wa_vbrp-vrkme,
+                 90 wa_vbrp-netwr.
+
+    ENDLOOP.
+
+  ENDIF.
+
+AT USER-COMMAND.
+  CASE sy-ucomm.
+
+    WHEN 'PDF'.
+
+    WHEN 'EXCEL'.
+
+    WHEN OTHERS.
+  ENDCASE.
+
+  " Output the data
+  SET PF-STATUS 'LIST'.
+
+
+
+
+TOP-OF-PAGE.
+  WRITE 'UST Global'.
+  ULINE.
+
+END-OF-PAGE.
+
+  WRITE : / 'This is demo statement'.
+  ULINE.
