@@ -1,0 +1,31 @@
+REPORT ZDON_TASK1.
+
+data v_kunnr TYPE kunnr.
+
+DATA it_data TYPE ZMAR_T_KUNNRF.
+DATA wa_data LIKE LINE OF it_data.
+
+SELECT-OPTIONS s_kunnr for v_kunnr.
+
+*PERFORM getdata.
+
+              CALL FUNCTION 'ZMAR_FM'
+                EXPORTING
+                  im_kunnr       = s_kunnr[]
+              IMPORTING
+
+                EX_KNA1        = it_data.
+
+WRITE : / 'customer name ',
+          20  'name1',
+          40 'region',
+*           'telephone',
+          60 'indicator' .
+
+loop at it_data into wa_data.
+  WRITE : / wa_data-kunnr,
+           20 wa_data-name1 left-JUSTIFIED,
+           60 wa_data-regio LEFT-JUSTIFIED,
+*            wa_data-telf1,
+          90 wa_data-xcpdk .
+  ENDLOOP.
