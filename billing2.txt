@@ -1,0 +1,112 @@
+REPORT ZMA_BILLING_TASK2.
+
+
+DATA : v_vbeln type zvbrk_ma-vbeln.
+SELECT-options s_vbeln for v_vbeln.
+*
+*DATA :v_total TYPE int8.
+*DATA :v_totalnet TYPE int8.
+
+TYPES: BEGIN OF ty_zvbrk_ma,
+         vbeln TYPE zvbrk_ma-vbeln,
+         fkdat TYPE zvbrk_ma-fkdat,
+         kunrg TYPE zvbrk_ma-kunrg,
+         netwr TYPE zvbrk_ma-netwr,
+       END OF ty_zvbrk_ma.
+
+
+TYPES: BEGIN OF ty_kna1,
+  kunnr TYPE kna1-kunnr,
+  name1 TYPE kna1-name1,
+  END OF ty_kna1.
+
+  TYPES: BEGIN OF ty_t006a,
+    mseht TYPE t006a-mseht,
+    END OF ty_t006a.
+
+
+TYPES :BEGIN OF ty_zvbrp_ma,
+         vbeln TYPE zvbrp_ma-vbeln,
+         posnr TYPE zvbrp_ma-posnr,
+         matnr TYPE zvbrp_ma-matnr,
+         fkimg TYPE zvbrp_ma-fkimg,
+         vrkme TYPE zvbrp_ma-vrkme,
+         netwr TYPE zvbrp_ma-netwr,
+       END OF ty_zvbrp_ma.
+
+
+
+DATA : it_zvbrk_ma TYPE TABLE OF ty_zvbrk_ma,
+       wa_zvbrk_ma LIKE LINE OF it_zvbrk_ma,
+       it_zvbrp_ma TYPE TABLE OF ty_zvbrp_ma,
+       wa_zvbrp_ma LIKE LINE OF it_zvbrp_ma,
+       it_kna1 TYPE TABLE OF ty_kna1,
+       wa_kna1 LIKE LINE OF it_kna1,
+       it_t006a TYPE TABLE OF ty_t006a,
+       wa_t006a LIKE LINE OF it_t006a.
+
+
+SELECT vbeln fkdat kunrg netwr FROM zvbrk_ma INTO TABLE it_zvbrk_ma WHERE vbeln IN s_VBELN[].
+SELECT vbeln posnr matnr fkimg vrkme netwr FROM zvbrp_ma INTO TABLE it_zvbrp_ma WHERE vbeln IN s_VBELN[].
+select mseht from t006a into TABLE it_t006a FOR ALL ENTRIES IN it_zvbrp_ma where msehi EQ it_zvbrp_ma-vrkme.
+sort it_zvbrp_ma BY vbeln.
+DATA v_vbeln_temp LIKE wa_zvbrp_ma-vbeln.
+      Loop AT it_zvbrp_ma INTO wa_zvbrp_ma.
+       IF wa_zvbrp_ma-vbeln NE v_vbeln_temp.
+         READ TABLE it_zvbrk_ma INTO wa_zvbrk_ma WITH KEY VBELN = wa_zvbrp_ma-vbeln.
+         READ TABLE it_kna1 INTO wa_kna1 WITH KEY kunnr = wa_zvbrk_ma-kunrg.
+         FORMAT COLOR COL_NEGATIVE.
+
+       Write : / wa_zvbrp_ma-vbeln,
+      20 wa_zvbrp_ma-matnr,
+      40 wa_zvbrp_ma-fkimg left-justified,
+      60 wa_zvbrp_ma-vrkme,
+      80 WA_t006a-mseht left-justified,
+      90 wa_zvbrp_ma-netwr left-justified.
+
+         FORMAT COLOR OFF.
+
+
+AT NEW vbeln.
+
+WRITE: /'Doc No:',wa_zvbrk_ma-vbeln,
+       /'Payer name:',wa_kna1,
+       /'Date:',wa_zvbrk_ma-fkdat,
+       /'NetValue:',wa_zvbrk_ma-netwr.
+
+SKIP.
+
+  WRITE: /'Item',
+          20 'Material',
+          40 'Qty',
+          60 'UoM',
+          80 'NetValue'.
+ENDAT.
+  Write : / wa_zvbrp_ma-vbeln,
+      20 wa_zvbrp_ma-matnr,
+      40 wa_zvbrp_ma-fkimg left-justified,
+      60 wa_zvbrp_ma-vrkme,
+      80 WA_t006a-mseht left-justified,
+      90 wa_zvbrp_ma-netwr left-justified.
+
+
+
+*SELECT vbeln posnr matnr fkimg vrkme netwr FROM zvbrp_ma INTO st_zvbrp_ma WHERE vbeln EQ p_VBELN.
+*
+*select mseht from t006a into v_mseht where msehi EQ st_zvbrp_ma-vrkme and spras eq sy-langu.
+*    endselect.
+*
+*
+*  WRITE:/ st_zvbrp_ma-posnr,
+*       20 st_zvbrp_ma-matnr,
+*       30 st_zvbrp_ma-fkimg,
+*       60 v_mseht,
+*       68 st_zvbrp_ma-netwr.
+ENDIF.
+AT END OF vbeln.
+    SUM.
+    WRITE : / wa_zvbrp_ma-fkimg, wa_zvbrp_ma-netwr.
+    WRITE : / '***************************************END of Document****************************************************'.
+    SKIP.
+  ENDAT.
+ENDLOOP.
