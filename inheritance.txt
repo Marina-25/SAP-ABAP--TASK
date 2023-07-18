@@ -1,0 +1,29 @@
+REPORT ZMAR_INHERITANCE.
+
+DATA o_super TYPE REF TO ZCL_MARSUPER.
+
+DATA o_sub TYPE REF TO ZCL_MARSUB.
+
+CREATE OBJECT O_super.
+CREATE OBJECT O_SUB.
+
+o_super->next_number(
+ IMPORTING
+    ex_num = DATA(num)
+).
+
+o_sub->next_number(
+  IMPORTING
+    ex_num = DATA(num1)
+).
+
+o_sub->next_whole_number( ).
+
+ o_super = o_sub.
+ o_sub ?= o_super.
+* o_super = o_sub.
+o_super->next_number(
+  IMPORTING
+    ex_num = num
+).
+WRITE 'END'.

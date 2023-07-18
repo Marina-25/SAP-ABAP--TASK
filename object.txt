@@ -1,0 +1,44 @@
+REPORT ZMAR_OBJECT.
+
+CLASS  COUNTER DEFINITION.
+  PUBLIC SECTION.
+  DATA COUNT TYPE i.
+     METHODS NEXT_NUMBER EXPORTING NUMBER TYPE i.
+       ENDCLASS.
+
+       CLASS COUNTER IMPLEMENTATION.
+         METHOD NEXT_NUMBER.
+           NUMBER = COUNT + 1.
+           COUNT = NUMBER.
+           ENDMETHOD.
+           ENDCLASS.
+DATA O_DOC TYPE REF TO COUNTER.
+DATA O_TAG TYPE REF TO COUNTER.
+
+DATA V_DOC TYPE i.
+DATA v_tag TYPE i.
+
+START-OF-SELECTION.
+
+CREATE OBJECT O_DOC.
+CREATE OBJECT O_TAG.
+
+O_DOC->next_number(
+ IMPORTING
+    number = V_DOC
+).
+
+O_TAG->next_number(
+ IMPORTING
+    number = V_TAG
+).
+
+O_DOC->next_number(
+ IMPORTING
+    number = V_DOC
+).
+
+O_TAG->next_number(
+ IMPORTING
+    number = V_TAG
+).
