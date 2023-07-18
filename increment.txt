@@ -1,0 +1,23 @@
+REPORT ZMAR_INCRMAIN.
+
+DATA: lv_doc TYPE I VALUE 5.
+DATA: lv_COUNT TYPE I.
+
+
+
+CALL FUNCTION 'ZLA_FMCOUNT'
+  EXPORTING
+    COUNT       = lv_doc
+IMPORTING
+  V_DOC             = lv_COUNT
+          .
+CALL FUNCTION 'ZLA_FMCOUNT'
+  EXPORTING
+    COUNT       = lv_doc
+IMPORTING
+  V_DOC             = lv_COUNT
+          .
+
+
+
+WRITE: 'Number of calls:', lv_COUNT.
