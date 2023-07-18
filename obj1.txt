@@ -1,0 +1,128 @@
+REPORT ZMAR_OBJECT1.
+CLASS lcl_counter DEFINITION.
+  PUBLIC SECTION.
+  CLASS-DATA emp_id TYPE i.
+  METHODS next_number EXPORTING number TYPE i.
+  METHODS set_count IMPORTING im_count TYPE i.
+  METHODS get_count EXPORTING ex_count TYPE i.
+  CLASS-METHODS set_emp_id IMPORTING im_empid TYPE i.
+  METHODS constructor IMPORTING im_count TYPE i.
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+DATA count TYPE i.
+ENDCLASS.
+CLASS lcl_counter IMPLEMENTATION.
+  METHOD next_number.
+    number = count + 1.
+    count = number.
+  ENDMETHOD.
+  METHOD set_count.
+    IF im_count GE 100.
+    count = im_count.
+    ENDIF.
+  ENDMETHOD.
+  METHOD get_count.
+    ex_count = count.
+    emp_id = 10.
+  ENDMETHOD.
+  METHOD constructor.
+    count = im_count.
+  ENDMETHOD.
+  METHOD set_emp_id.
+    emp_id = im_empid.
+
+  ENDMETHOD.
+ENDCLASS.
+
+DATA o_doc TYPE REF TO lcl_counter.
+DATA o_tag TYPE REF TO lcl_counter.
+
+DATA v_doc TYPE i.
+DATA v_tag TYPE i.
+
+START-OF-SELECTION.
+
+CREATE OBJECT o_doc
+  EXPORTING
+    im_count = 100
+  ..
+CREATE OBJECT o_tag
+  EXPORTING
+    im_count = 10
+  ..
+lcl_counter=>emp_id = 1122.
+*o_doc->set_count( im_count = 100 ).
+o_doc->next_number(
+  IMPORTING
+    number =  v_doc
+).
+
+o_tag->next_number(
+  IMPORTING
+    number = v_tag
+).
+
+o_tag->next_number(
+  IMPORTING
+    number = v_tag
+).
+
+o_tag->next_number(
+  IMPORTING
+    number = v_tag
+).
+
+o_doc->next_number(
+  IMPORTING
+    number =  v_doc
+).
+
+o_doc->next_number(
+  IMPORTING
+    number =  v_doc
+).
+
+o_doc->next_number(
+  IMPORTING
+    number =  v_doc
+).
+
+  CALL FUNCTION 'ZPS_FM_COUNT'
+   IMPORTING
+     NEXT_NO       = v_doc
+            .
+
+
+  CALL FUNCTION 'ZPS_FM_COUNT'
+   IMPORTING
+     NEXT_NO       = v_tag
+            .
+
+   CALL FUNCTION 'ZPS_FM_COUNT'
+   IMPORTING
+     NEXT_NO       = v_tag
+            .
+
+  CALL FUNCTION 'ZPS_FM_COUNT'
+   IMPORTING
+     NEXT_NO       = v_doc
+            .
+
+  CALL FUNCTION 'ZPS_FM_COUNT'
+   IMPORTING
+     NEXT_NO       = v_doc
+            .
+
+  CALL FUNCTION 'ZPS_FM_COUNT'
+   IMPORTING
+     NEXT_NO       = v_doc
+            .
+
+  CALL FUNCTION 'ZPS_FM_COUNT'
+   IMPORTING
+     NEXT_NO       = v_doc
+            .
+
+  WRITE :v_doc.
+   WRITE :v_tag.
