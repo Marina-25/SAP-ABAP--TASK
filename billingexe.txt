@@ -1,0 +1,68 @@
+REPORT ZMAR_BILLING_EXT.
+
+
+
+
+DATA : it_header TYPE ZDEMO_T_HEADER,
+       it_item TYPE ZDEMO_T_ITEM.
+
+
+
+DATA v_vbeln TYPE vbrk-vbeln.
+SELECT-OPTIONS s_vbeln FOR v_vbeln.
+
+
+
+START-OF-SELECTION.
+PERFORM get_data.
+
+
+
+END-OF-SELECTION.
+PERFORM display.
+
+
+
+*&---------------------------------------------------------------------*
+*& Form get_data
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM get_data .
+*PERFORM get_header IN PROGRAM ZDEMO_BILLING_SUB USING s_vbeln[] CHANGING it_header.
+*PERFORM get_item IN PROGRAM ZDEMO_BILLING_SUB USING s_vbeln[] CHANGING it_item.
+PERFORM get_billing_data IN PROGRAM ZDEMO_BILLING_SUB USING s_vbeln[] CHANGING it_header it_item.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form display
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM display .
+DATA : lw_header LIKE LINE OF it_header,
+       lw_item LIKE LINE OF it_item.
+SORT it_item by vbeln posnr.
+LOOP AT it_item INTO lw_item.
+  AT NEW vbeln.
+    READ TABLE it_header INTO lw_header WITH KEY vbeln = lw_item-vbeln.
+    "Print header data
+
+
+
+    "Print colum heading for item
+  ENDAT.
+
+
+
+  "Print Item Data
+
+
+
+ENDLOOP.
+ENDFORM.
