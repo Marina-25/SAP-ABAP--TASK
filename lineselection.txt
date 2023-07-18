@@ -1,0 +1,96 @@
+REPORT ZMAR_LINESELECTION NO STANDARD PAGE HEADING LINE-COUNT 10(1).
+*
+
+*
+
+**to give type to change description.
+TYPES : BEGIN OF ty_kna1,
+        kunnr TYPE kna1-kunnr,
+        name1 TYPE kna1-name1,
+        END OF ty_kna1.
+
+TYPES : BEGIN OF ty_t006a,
+        msehi TYPE t006a-msehi,
+        mseht TYPE t006a-mseht,
+        END OF  ty_t006a.
+*  *step1
+DATA : it_vbrk TYPE TABLE OF zvbrk_ma,
+      wa_vbrk LIKE LINE OF it_vbrk,
+      it_vbrp TYPE TABLE OF zvbrp_ma,
+      wa_vbrp LIKE LINE OF it_vbrp,
+     it_t006a TYPE TABLE OF ty_t006a,
+     wa_t006a LIKE LINE OF it_t006a,
+     it_kna1 TYPE TABLE OF ty_kna1,
+     wa_kna1 LIKE LINE OF it_kna1.
+
+*LOAD-OF-PROGRAM.
+*if sy-subrc IS INITIAL.
+* ENDIF.
+*
+* AT SELECTION-SCREEN output.
+
+
+*step2
+SET Pf-status 'EVENT'.
+START-OF-SELECTION.
+SELECT-OPTIONS s_vbeln FOR wa_vbrk-vbeln.
+*step3
+     SELECT * FROM zvbrk_ma INTO TABLE it_vbrk WHERE vbeln in s_vbeln.
+       SELECT * FROM zvbrp_ma INTO TABLE it_vbrp WHERE vbeln in s_vbeln[].
+        SELECT msehi mseht from t006a into TABLE it_t006a where spras eq sy-langu.
+          SELECT kunnr name1 from kna1 into TABLE it_kna1 where spras eq sy-langu.
+
+END-OF-SELECTION.
+*step4
+         sort it_vbrp by vbeln posnr.
+         LOOP AT it_vbrp INTO wa_vbrp.
+           READ TABLE it_vbrk INTO wa_vbrk WITH KEY vbeln = wa_vbrp-vbeln.
+           READ TABLE it_t006a into  wa_t006a with key msehi = wa_vbrp-vrkme.
+           READ TABLE it_kna1 into wa_kna1 with key kunnr = wa_vbrk-kunrg.
+          AT NEW vbeln.
+             WRITE : / 'DOC NO :',wa_vbrk-vbeln,
+                    / 'Payer number:',wa_vbrk-kunrg,
+                    / 'payer name:',wa_kna1,
+                     / 'date :',wa_vbrk-fkdat,
+                     / 'net value :',wa_vbrk-netwr.
+
+            WRITE :  /'item ',
+                     45 'Material ',
+                    60 'Quantity',
+                    75 'Measure',
+                    90 'abbr',
+                     110'Net value'.
+
+
+              ENDAT.
+
+             WRITE : / wa_vbrp-posnr,
+                       wa_vbrp-matnr,
+                       wa_vbrp-fkimg,
+                       wa_vbrp-vrkme,
+                       wa_t006a-mseht,
+                       wa_vbrp-netwr.
+
+  CLEAR : wa_vbrp,wa_vbrk.
+   ENDLOOP.
+
+   AT LINE-SELECTION.
+              WRITE : / 'This is for line selection ',sy-lsind.
+
+   TOP-OF-PAGE.
+   WRITE 'UST GLOBAL'.
+
+   END-OF-PAGE.
+*   if sy-pagno is INITIAL.
+*
+*     ENDIF.
+  WRITE : / 'This is SAP'.
+
+  AT LINE-SELECTION.
+    WRITE : / 'This is secondary list ',sy-lsind.
+
+    AT USER-COMMAND.
+      CASE sy-ucomm.
+        WHEN 'pdf'.
+          WHEN 'excel'.
+       ENDCASE.
