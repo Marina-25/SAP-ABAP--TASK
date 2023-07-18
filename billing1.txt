@@ -1,0 +1,181 @@
+REPORT ZMA_BILLING_TASK1.
+
+*DATA v_vbeln TYPE zvbrk_ma-vbeln.
+*SELECT-OPTIONS s_vbeln FOR v_vbeln.
+*
+*TYPES : BEGIN OF ty_zvbrk_ma,
+*  vbeln TYPE zvbrk_ma-vbeln,
+*  fkdat TYPE zvbrk_ma-fkdat,
+*  kunrg TYPE zvbrk_ma-kunrg,
+*  netwr TYPE zvbrk_ma-netwr,
+*  END OF ty_zvbrk_ma.
+*
+*TYPES : BEGIN OF ty_zvbrp_ma,
+*  vbeln TYPE zvbrp_ma-vbeln,
+*  posnr TYPE zvbrp_ma-posnr,
+*  matnr TYPE zvbrp_ma-matnr,
+*  fkimg TYPE zvbrp_ma-fkimg,
+*  vrkme TYPE zvbrp_ma-vrkme,
+*  netwr TYPE zvbrp_ma-netwr,
+*  END OF ty_zvbrp_ma.
+*
+*TYPES : BEGIN OF ty_kna1,
+*  name1 TYPE kna1,
+*  kunnr TYPE KNA1,
+*  END OF ty_kna1.
+*
+* TYPES : BEGIN OF ty_t006a,
+*   mseht TYPE mseht,
+*   END OF ty_t006a.
+*
+*DATA : it_zvbrk_ma TYPE TABLE OF ty_zvbrk_ma,
+*       wa_zvbrk_ma LIKE LINE OF it_zvbrk_ma,
+*       it_zvbrp_ma TYPE TABLE OF ty_zvbrp_ma,
+*       wa_zvbrp_ma LIKE LINE OF it_zvbrp_ma,
+*       it_kna1 TYPE TABLE OF ty_kna1,
+*       wa_kna1 LIKE LINE OF it_kna1,
+*       it_t006a TYPE TABLE OF ty_t006a,
+*       wa_t006a LIKE LINE OF it_t006a.
+*
+*
+*SELECT SINGLE name1 FROM kna1 INTO wa_kna1 WHERE kunnr EQ wa_zvbrk_ma-kunrg.
+*SELECT vbeln,fkdat,kunrg,netwr FROM zvbrk_ma INTO TABLE it_zvbrk_ma WHERE vbeln in v_vbeln[].
+*SELECT vbeln,posnr,matnr,fkimg,vrkme,netwr FROM zvbrp_ma INTO TABLE it_zvbrp_ma WHERE vbeln in v_vbeln[].
+*
+*
+*      ENDIF.
+
+* WRITE : / 'Item',
+*  20 'Material',
+*  40 'Qty',
+*  60 'UoM',
+*  80 'Netvalue'.
+
+
+*  SELECT SINGLE name1 FROM kna1 INTO name1 WHERE kunnr EQ wa_zvbrp_ma-kunrg.
+*select name1 from kna1 into table  it_kna1 for all entries in it_zvbrk_ma where kunnr EQ it_zvbrk_ma-kunrg.
+*
+* LOOP AT it_zvbrk_ma INTO wa_zvbrk_ma.
+* READ TABLE it_zvbrp_ma INTO wa_zvbrp_ma WITH KEY vbeln = wa_zvbrp_ma-vbeln.
+* Read table it_kna1 into wa_kna1 with key kunnr = wa_zvbrk_ma-kunrg.
+* Read table it_t006a into wa_t006a with key mseht = wa_zvbrp_ma-vrkme.
+*  WRITE : / 'Doc No :', wa_zvbrk_ma-vbeln,
+*          / 'Date :', wa_zvbrk_ma-fkdat,
+*         /  'Payer name :',wa_kna1-name1,
+*          / 'NetValue :',wa_zvbrk_ma-netwr.
+*  ENDLOOP.
+*
+*  LOOP AT it_zvbrp_ma INTO wa_zvbrp_ma.
+*  READ TABLE it_zvbrp_ma INTO wa_zvbrp_ma WITH KEY vbeln = wa_zvbrp_ma-vbeln.
+*  WRITE: / 'Item',
+*  20 'Material',
+*  40 'Qty',
+*  60 'UoM',
+*  80 'Netvalue'.
+*  ENDLOOP.
+
+DATA : v_vbeln type zvbrk_ma-vbeln.
+SELECT-options s_vbeln for v_vbeln.
+
+Types: begin of ty_vbrk,
+       vbeln type ZVBRK_ma-vbeln,
+       fkdat type ZVBRK_ma-fkdat,
+       kunrg type ZVBRK_ma-kunrg,
+       netwr type ZVBRK_ma-netwr,
+  end of ty_vbrk.
+
+  Types: begin of ty_vbrp,
+       vbeln type ZVBRP_ma-vbeln,
+       posnr type ZVBRP_ma-posnr,
+       matnr type ZVBRP_ma-matnr,
+       fkimg type ZVBRP_ma-fkimg,
+       vrkme type ZVBRP_ma-vrkme,
+       netwr type ZVBRP_ma-netwr,
+end of ty_vbrp.
+
+TYPES : BEGIN OF ty_kna1,
+ name1 TYPE kna1,
+  kunnr TYPE KNA1,
+ END OF ty_kna1.
+
+ TYPES : BEGIN OF ty_t006a,
+  mseht TYPE mseht,
+  END OF ty_t006a.
+
+
+data : v_name type kna1-NAME1.
+data :v_text type T006A-Mseht.
+
+
+
+DATA :it_vbrk type table of ty_vbrk,
+      wa_vbrk like line of it_vbrk.
+DATA :it_vbrp type table of ty_vbrp,
+      wa_vbrp like line of it_vbrp.
+DATA :it_vname type table of kna1,
+      wa_vname like line of it_vname.
+DATA :it_vtext type table of T006A,
+      wa_vtext like line of it_vtext.
+
+if s_vbeln is not initial.
+SELECT vbeln fkdat kunrg netwr FROM ZVBRK_ma INTO table it_vbrk where vbeln in s_vbeln[].
+   if it_vbrk is not initial.
+     Select vbeln
+       posnr
+       matnr
+       fkimg
+       vrkme
+       netwr from zvbrp_ma into table  it_vbrp for all entries in it_vbrk where vbeln eq it_vbrk-vbeln.
+
+
+
+   select name1 from kna1 into table  it_vname  for all entries in it_vbrk where kunnr EQ it_vbrk-kunrg.
+
+
+
+
+if it_vbrp is not initial.
+Select mseht from T006A into  TABLE IT_vtext  for all entries in it_vbrp where spras EQ sy-langu and msehi eq it_vbrp-vrkme.
+
+
+
+endif.
+endif.
+
+
+
+
+Loop at it_vbrk into wa_vbrk.
+Read table it_vbrp into wa_vbrp with key vbeln = wa_vbrk-vbeln.
+Read table it_vname into wa_vname with key kunnr = wa_vbrk-kunrg.
+Read table it_vtext into wa_vtext with key msehi = wa_vbrp-vrkme.
+
+
+
+
+
+  Write : /'DOC_NO',wa_vbrk-vbeln,
+*        / 'payer',st_vbrk-kunrg,
+         /'payer name',wa_vname-name1,
+         /'Date',wa_vbrk-fkdat,
+        /'net value',wa_vbrk-netwr LEFT-JUSTIFIED.
+
+
+
+Write : / 'Item',
+      20 'material',
+      40 'quantity',
+      60 'UOM',
+      80  'net value'.
+
+Write : / wa_vbrp-vbeln,
+      20 wa_vbrp-matnr,
+      40 wa_vbrp-fkimg left-justified,
+      60 wa_vbrp-vrkme,
+      80 WA_Vtext-mseht left-justified,
+      90 wa_vbrp-netwr left-justified.
+
+
+
+endloop.
+endif.
