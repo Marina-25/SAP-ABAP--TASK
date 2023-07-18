@@ -1,0 +1,84 @@
+REPORT ZMAR_SUBROUTINE.
+
+**to give type to change description.
+TYPES : BEGIN OF ty_kna1,
+        kunnr TYPE kna1-kunnr,
+        name1 TYPE kna1-name1,
+        END OF ty_kna1.
+
+TYPES : BEGIN OF ty_t006a,
+        msehi TYPE t006a-msehi,
+        mseht TYPE t006a-mseht,
+        END OF  ty_t006a.
+
+DATA : V_FKDAT TYPE fkdat,
+       V_VBELN TYPE vbeln,
+       v_kunrg TYPE kunrg.
+
+
+*  *step1
+DATA : it_vbrk TYPE TABLE OF zvbrk_ma,
+      wa_vbrk LIKE LINE OF it_vbrk,
+      it_vbrp TYPE TABLE OF zvbrp_ma,
+      wa_vbrp LIKE LINE OF it_vbrp,
+     it_t006a TYPE TABLE OF ty_t006a,
+     wa_t006a LIKE LINE OF it_t006a,
+     it_kna1 TYPE TABLE OF ty_kna1,
+     wa_kna1 LIKE LINE OF it_kna1.
+
+DATA : it_header TYPE ZMAR_HEADERTABLE,
+       wa_header LIKE LINE OF it_header.
+
+DATA : it_item TYPE ZMAR_HEADERITEM,
+      wa_item LIKE LINE OF it_item.
+
+SELECT-OPTIONS s_vbeln FOR wa_vbrk-vbeln.
+
+PERFORM getselect IN PROGRAM ZMAR_SELECTSTMTS USING s_vbeln[]
+                                                CHANGING it_header.
+
+PERFORM getselectITEM IN PROGRAM ZMAR_SELECTSTMTS USING s_vbeln[]
+                                                CHANGING it_item.
+
+
+*step4
+*         sort it_vbrp by vbeln posnr.
+*         LOOP AT it_header INTO wa_header.
+*           READ TABLE it_header INTO wa_header WITH KEY vbeln = wa_item-vbeln.
+*           READ TABLE it_item INTO wa_item WITH KEY vbeln = wa_item-vbeln.
+*           READ TABLE it_t006a into  wa_t006a with key msehi = wa_vbrp-vrkme.
+*           READ TABLE it_kna1 into wa_kna1 with key kunnr = wa_header-kunrg.
+*           AT NEW vbeln.
+loop at it_header into wa_header.
+
+             WRITE : / 'DOC NO :',wa_header-vbeln,
+*                    / 'Payer number:',wa_header-kunrg,
+                    / 'payer name:',wa_kna1,
+                     / 'date :',wa_header-fkdat,
+                     / 'net value :',wa_header-netwr.
+*                      /'item ',
+*                     45 'Material ',
+*                    60 'Quantity',
+*                    75 'Measure',
+*                    90 'abbr',
+*                     110'Net value'.
+hide wa_header-vbeln.
+*clear wa_header-vbeln.
+endloop.
+at LINE-SELECTION.
+loop at it_item into wa_item WHERE vbeln eq wa_header-vbeln.
+             WRITE : / wa_item-posnr,
+                       wa_item-matnr,
+                       wa_item-fkimg,
+                       wa_item-vrkme,
+                      wa_t006a-mseht,
+                       wa_item-netwr.
+
+
+  endloop.
+*              ENDAT.
+**
+
+*
+*  CLEAR : wa_vbrp,wa_vbrk.
+*   ENDLOOP.
