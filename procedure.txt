@@ -1,0 +1,24 @@
+REPORT ZMAR_PROCEDURES.
+
+DATA : v_matnr TYPE matnr,
+       v_spras TYPE spras,
+       v_maktx TYPE maktx.
+v_matnr = '000000000000000011'.
+v_spras = 'E'.
+PERFORM get_maktx USING v_matnr v_spras CHANGING v_maktx.
+WRITE v_maktx.
+*&---------------------------------------------------------------------*
+*& Form get_maktx
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> V_MATNR
+*&      --> V_SPRAS
+*&      <-- V_MAKTX
+*&---------------------------------------------------------------------*
+FORM get_maktx  USING VALUE   p_v_matnr
+                         p_v_spras
+                VALUE (p_v_maktx).
+  select single maktx from makt into p_v_maktx WHERE matnr eq v_matnr and spras eq v_spras.
+
+ENDFORM.
