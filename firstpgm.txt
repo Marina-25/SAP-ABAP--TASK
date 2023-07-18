@@ -1,0 +1,25 @@
+Report ZDEMO_FIRST_PROGRAM1.
+
+DATA v_matnr TYPE makt-matnr.
+
+TYPES : BEGIN OF ty_makt,
+         matnr TYPE makt-matnr,
+         spras TYPE makt-spras,
+        maktx TYPE makt-maktx,
+      END OF ty_makt.
+
+DATA st_makt TYPE ty_makt.
+
+v_matnr = '100'.
+
+WRITE v_matnr.
+
+v_matnr = '200'.
+
+WRITE v_matnr.
+
+st_makt-matnr = '100'.
+write st_makt-matnr.
+
+st_makt-matnr = '200'.
+write st_makt-matnr.
